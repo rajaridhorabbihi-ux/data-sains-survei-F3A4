@@ -1,0 +1,30 @@
+/* Layout sidebar. Muat SETELAH style.css */
+body { padding: 0; }
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+    width: 240px; flex-shrink: 0; background: #1e293b; border-right: 1px solid #334155;
+    padding: 28px 16px; position: sticky; top: 0; height: 100vh;
+}
+.brand { font-size: 1.25rem; font-weight: 700; color: #38bdf8; padding: 0 12px 24px; }
+.sidebar nav { display: flex; flex-direction: column; gap: 6px; }
+.menu {
+    color: #cbd5e1; text-decoration: none; padding: 11px 14px; border-radius: 8px;
+    font-size: 0.95rem; border-left: 3px solid transparent;
+}
+.menu:hover { background: #334155; }
+.menu.aktif { background: #0f172a; color: #38bdf8; border-left-color: #38bdf8; font-weight: 600; }
+.konten { flex: 1; min-width: 0; padding: 30px; max-width: 1200px; }
+.th-link { color: inherit; text-decoration: none; }
+.th-link:hover { color: #38bdf8; }
+.grafik-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 25px; }
+.grafik-grid .lebar { grid-column: 1 / -1; }
+.chart-box { position: relative; height: 340px; }
+.chart-box.tinggi { height: 400px; }
+@media (max-width: 800px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; position: static; padding: 16px; }
+    .brand { padding-bottom: 12px; }
+    .sidebar nav { flex-direction: row; }
+    .konten { padding: 16px; }
+    .grafik-grid { grid-template-columns: 1fr; }
+}

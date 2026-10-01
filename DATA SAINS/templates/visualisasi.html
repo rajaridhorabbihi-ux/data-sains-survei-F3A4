@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block konten %}
+<header>
+    <h1>Visualisasi Data</h1>
+    <p id="ringkasan">Memuat data survei...</p>
+</header>
+<div class="grafik-grid">
+    <div class="card"><h2>Bar Chart: Responden per Fakultas</h2><div class="chart-box"><canvas id="barChart"></canvas></div></div>
+    <div class="card"><h2>Histogram: Rentang Pengeluaran</h2><div class="chart-box"><canvas id="histChart"></canvas></div></div>
+    <div class="card lebar"><h2>Scatter Plot: ID Responden vs Rentang Pengeluaran</h2><div class="chart-box tinggi"><canvas id="scatterChart"></canvas></div></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+const teks = '#94a3b8', garis = '#334155';
+Chart.defaults.color = teks;
+
+// Menampilkan "jumlah (persen%)" di atas setiap batang
+const labelPersen = {
+    id: 'labelPersen',
+    afterDatasetsDraw(chart, args, opt) {
+        if (!opt.pct) return;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '600 12px sans-serif';
+        ctx.textAlign = 'center';
+        chart.getDatasetMeta(0).data.forEach((bar, i) => {
+            ctx.fillText(chart.data.datasets[0].data[i] + ' (' + opt.pct[i] + '%)', bar.x, bar.y - 6);
+        });
+        ctx.restore();
+    }
+};
+
+function opsiBatang(pct, judulX, judulY) {
+    return {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 24 } },
+        plugins: {
+            legend: { display: false },
+            labelPersen: { pct },
+            tooltip: { callbacks: { label: c => c.parsed.y + ' responden (' + pct[c.dataIndex] + '%)' } }
+        },
+        scales: {
+            x: { title: { display: true, text: judulX }, grid: { color: garis } },
+            y: { title: { display: true, text: judulY }, beginAtZero: true, ticks: { precision: 0 }, grid: { color: garis } }
+        }
+    };
+}
+
+fetch('/api/stats').then(r => r.json()).then(d => {
+    document.getElementById('ringkasan').textContent = d.total + ' responden. Persentase dihitung dari total responden.';
+
+    new Chart(document.getElementById('barChart'), {
+        type: 'bar', plugins: [labelPersen],
+        data: { labels: d.bar.labels, datasets: [{ data: d.bar.counts, backgroundColor: '#38bdf8', borderRadius: 4 }] },
+        options: opsiBatang(d.bar.pct, 'Fakultas', 'Jumlah responden')
+    });
+
+    // Histogram: batang saling menempel
+    new Chart(document.getElementById('histChart'), {
+        type: 'bar', plugins: [labelPersen],
+        data: { labels: d.histogram.labels, datasets: [{ data: d.histogram.counts, backgroundColor: '#818cf8',
+                borderColor: '#0f172a', borderWidth: 1, barPercentage: 1, categoryPercentage: 1 }] },
+        options: opsiBatang(d.histogram.pct, 'Rentang pengeluaran', 'Jumlah responden')
+    });
+
+    const warna = ['#f43f5e', '#fbbf24', '#38bdf8', '#22c55e'];
+    new Chart(document.getElementById('scatterChart'), {
+        type: 'scatter',
+        data: { datasets: d.scatter.groups.map((g, i) => ({
+            label: d.scatter.labels[i] + ' (' + d.scatter.pct[i] + '%)',
+            data: g, backgroundColor: warna[i], pointRadius: 5 })) },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { tooltip: { callbacks: { label: c => c.raw.nama + ' (ID ' + c.raw.x + '): ' + d.scatter.labels[c.raw.y] } } },
+            scales: {
+                x: { title: { display: true, text: 'ID responden' }, grid: { color: garis } },
+                y: { min: -0.5, max: 3.5, ticks: { stepSize: 1, callback: v => d.scatter.labels[v] || '' },
+                     title: { display: true, text: 'Rentang pengeluaran' }, grid: { color: garis } }
+            }
+        }
+    });
+}).catch(e => { document.getElementById('ringkasan').textContent = 'Gagal memuat data: ' + e; });
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Survei Mahasiswa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="brand">Survei Kantin</div>
+        <nav>
+            <a class="menu {{ 'aktif' if halaman == 'data' }}" href="{{ url_for('data_mahasiswa') }}">Data Mahasiswa</a>
+            <a class="menu {{ 'aktif' if halaman == 'visualisasi' }}" href="{{ url_for('visualisasi') }}">Visualisasi Data</a>
+        </nav>
+    </aside>
+    <main class="konten">{% block konten %}{% endblock %}</main>
+</div>
+</body>
+</html>
